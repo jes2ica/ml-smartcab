@@ -8,7 +8,7 @@ class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
         This is the object you will be modifying. """
 
-    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5):
+    def __init__(self, env, learning=True, epsilon=1.0, alpha=0.5):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -95,16 +95,21 @@ class LearningAgent(Agent):
         # Set the agent state and default action
         self.state = state
         self.next_waypoint = self.planner.next_waypoint()
-        action = random.choice(self.valid_actions)
+        action = None
 
         # When not learning, choose a random action
         # When learning, choose a random action with 'epsilon' probability
         # Otherwise, choose an action with the highest Q-value for the current state
         # Be sure that when choosing an action with highest Q-value that you randomly select between actions that "tie".
-        if self.learning and random.random() > self.epsilon:
-            maxVal = self.get_maxQ(state)
-            candidates = [act for act in pos_actions if pos_actions[act] == maxVal]
-            action = random.choice(candidates)
+        if not self.learning:
+            action = random.choice(self.valid_actions)
+        else:
+            if random.random() > self.epsilon:
+                action = random.choice(self.valid_actions)
+            else:
+                maxQ = self.get_maxQ(state)
+                candidates = [a for a, v in self.Q[state].items() if v == maxQ]
+                action = random.choice(candidates)
         return action
 
 
