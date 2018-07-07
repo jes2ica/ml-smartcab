@@ -8,7 +8,7 @@ class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
         This is the object you will be modifying. """
 
-    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5):
+    def __init__(self, env, learning=True, epsilon=1.0, alpha=0.5):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -19,8 +19,10 @@ class LearningAgent(Agent):
         self.epsilon = epsilon   # Random exploration factor
         self.alpha = alpha       # Learning factor
 
+
         # Set any additional class parameters as needed
-        self.counter = 1
+        self.trial_num = 1.0
+        self.decay_factor = 0.05
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -36,8 +38,8 @@ class LearningAgent(Agent):
         if testing:
             self.epsilon = self.alpha = 0
         else:
-            self.epsilon = 0.999 ** self.counter
-            self.counter += 1
+            self.epsilon -= self.decay_factor
+            self.trial_num += 1.0
 
         return None
 
@@ -68,6 +70,8 @@ class LearningAgent(Agent):
 
         # Calculate the maximum Q-value of all actions for a given state
         maxAction = max(self.Q[state], key = lambda x: self.Q[state][x])
+        print(self.Q[state])
+        print(maxAction)
         maxQ = self.Q[state][maxAction]
 
         return maxQ
@@ -95,8 +99,8 @@ class LearningAgent(Agent):
         # Set the agent state and default action
         self.state = state
         self.next_waypoint = self.planner.next_waypoint()
-        action = None
 
+        action = None
         # When not learning, choose a random action
         # When learning, choose a random action with 'epsilon' probability
         # Otherwise, choose an action with the highest Q-value for the current state
@@ -104,7 +108,7 @@ class LearningAgent(Agent):
         if not self.learning:
             action = random.choice(self.valid_actions)
         else:
-            if random.random() > self.epsilon:
+            if random.random() < self.epsilon:
                 action = random.choice(self.valid_actions)
             else:
                 maxQ = self.get_maxQ(state)
@@ -137,7 +141,6 @@ class LearningAgent(Agent):
         action = self.choose_action(state)  # Choose an action
         reward = self.env.act(self, action) # Receive a reward
         self.learn(state, action, reward)   # Q-learn
-
         return
 
 
