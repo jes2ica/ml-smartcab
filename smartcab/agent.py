@@ -22,7 +22,7 @@ class LearningAgent(Agent):
 
         # Set any additional class parameters as needed
         self.trial_num = 1.0
-        self.decay_factor = 0.05
+        self.decay_factor = 0.001
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -38,7 +38,11 @@ class LearningAgent(Agent):
         if testing:
             self.epsilon = self.alpha = 0
         else:
-            self.epsilon -= self.decay_factor
+            # unoptimized
+            # self.epsilon -= self.decay_factor
+
+            # optimized
+            self.epsilon = math.fabs(math.cos(self.decay_factor * self.trial_num))
             self.trial_num += 1.0
 
         return None
